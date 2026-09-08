@@ -386,7 +386,7 @@ class TestManagerDownload(ManagerDownloadTestBase):
     def body():
       artifact = self.make_artifact(chunked=True)
       self._bundle.ref = "test-ref"
-      self._bundle.minimumSelectorVersion = 18
+      self._bundle.minimumSelectorVersion = helpers.REQUIRED_JSON_VERSION
       params, store = self._make_params_with_store()
       self.manager.params = params
       asyncio.run(self.manager._download_bundle(self._bundle, self.dest, "qcom"))
@@ -406,7 +406,7 @@ class TestManagerDownload(ManagerDownloadTestBase):
     def body():
       self.make_artifact(chunked=True)
       self._bundle.ref = "big-ref"
-      self._bundle.minimumSelectorVersion = 18
+      self._bundle.minimumSelectorVersion = helpers.REQUIRED_JSON_VERSION
       params, store = self._make_params_with_store()
       self.manager.params = params
       asyncio.run(self.manager._download_bundle(self._bundle, self.dest, "usbgpu"))
@@ -469,7 +469,7 @@ def manifest_bundle(short_name: str, ref: str, index: int = 0, is_big: bool = Fa
     "environment": "release",
     "runner": "tinygrad",
     "is_big": is_big,
-    "minimum_selector_version": "18",
+    "minimum_selector_version": str(helpers.REQUIRED_JSON_VERSION),
     "ref": ref,
     "models": [{
       "type": "supercombo",
@@ -545,6 +545,10 @@ class TestModelFetcherSources(OpenpilotTestCase):
       "qcom": ModelFetcher.MODEL_URL,
       "usbgpu": ModelFetcher.MODEL_URL_USBGPU,
     }
+
+  def test_fetcher_uses_current_published_manifests(self):
+    assert ModelFetcher.MODEL_URL.endswith("/driving_models_v22.json")
+    assert ModelFetcher.MODEL_URL_USBGPU.endswith("/driving_models_chestnut_v25.json")
 
 
 
@@ -655,7 +659,7 @@ class TestActiveBundleValidation(OpenpilotTestCase):
   def _raw_bundle(ref: str, runner: int | None = None) -> dict:
     bundle = custom.ModelManagerSP.ModelBundle.new_message()
     bundle.ref = ref
-    bundle.minimumSelectorVersion = 18
+    bundle.minimumSelectorVersion = helpers.REQUIRED_JSON_VERSION
     if runner is not None:
       bundle.runner = runner
     return bundle.to_dict()
@@ -697,7 +701,7 @@ class TestActiveBundleSelection(OpenpilotTestCase):
   def _raw_bundle(ref: str) -> dict:
     bundle = custom.ModelManagerSP.ModelBundle.new_message()
     bundle.ref = ref
-    bundle.minimumSelectorVersion = 18
+    bundle.minimumSelectorVersion = helpers.REQUIRED_JSON_VERSION
     return bundle.to_dict()
 
   def _params(self, qcom=None, usbgpu=None):
@@ -744,7 +748,7 @@ class TestEffectiveSource(OpenpilotTestCase):
   def _raw_bundle(ref: str) -> dict:
     bundle = custom.ModelManagerSP.ModelBundle.new_message()
     bundle.ref = ref
-    bundle.minimumSelectorVersion = 18
+    bundle.minimumSelectorVersion = helpers.REQUIRED_JSON_VERSION
     return bundle.to_dict()
 
   def test_runtime_no_gpu(self):
